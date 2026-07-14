@@ -1,3 +1,4 @@
+import AuthCallback from './pages/AuthCallback'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import AuthLayout from './components/layout/AuthLayout'
@@ -12,6 +13,7 @@ import SignupPage from './pages/SignupPage'
 function App() {
   return (
     <Routes>
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
