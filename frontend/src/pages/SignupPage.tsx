@@ -3,8 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import AuthFormField from "../components/auth/AuthFormField";
-import { EyeIcon, EyeOffIcon } from "../components/icons";
-import { signUp } from "../lib/auth";
+import { EyeIcon, EyeOffIcon, GoogleIcon } from "../components/icons";
+import { signUp, signInWithGoogle } from "../lib/auth";
 
 const signupSchema = z
   .object({
