@@ -50,6 +50,20 @@ export async function signIn({ email, password }: SignInInput) {
   return data
 }
 
+export async function signInWithGoogle() {
+  assertSupabaseConfigured()
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (error) throw error
+  return data
+}
+
 export async function signOut() {
   assertSupabaseConfigured()
   const { error } = await supabase.auth.signOut()
