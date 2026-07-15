@@ -17,7 +17,6 @@ function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
       </Route>
 
       <Route element={<Layout />}>
