@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import AuthCallback from './pages/AuthCallback'
 import Layout from './components/layout/Layout'
 import AuthLayout from './components/layout/AuthLayout'
 import HomePage from './pages/HomePage'
