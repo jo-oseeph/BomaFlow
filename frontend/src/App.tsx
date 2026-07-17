@@ -17,6 +17,8 @@ import SignupPage from './pages/SignupPage'
 import AuthCallback from './pages/AuthCallback'
 
 import DashboardPage from './pages/dashboard/DashboardPage'
+import PropertiesDashboardPage from './pages/properties/PropertiesDashboardPage'
+import AddPropertyPage from './pages/properties/AddPropertyPage'
 
 function App() {
   return (
@@ -26,6 +28,16 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+
+          <Route
+            path="/dashboard/properties"
+            element={<PropertiesDashboardPage />}
+          />
+
+          <Route
+            path="/dashboard/properties/new"
+            element={<AddPropertyPage />}
+          />
         </Route>
       </Route>
 
