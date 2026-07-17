@@ -1,19 +1,33 @@
 import { Routes, Route } from 'react-router-dom'
+
 import Layout from './components/layout/Layout'
 import AuthLayout from './components/layout/AuthLayout'
+import DashboardLayout from './components/layout/DashboardLayout'
+
+import ProtectedRoute from './components/auth/ProtectedRoute'
+
 import HomePage from './pages/HomePage'
 import AboutPage from './pages/AboutPage'
 import PropertiesPage from './pages/PropertiesPage'
 import ServicesPage from './pages/ServicesPage'
 import ContactPage from './pages/ContactPage'
+
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import AuthCallback from './pages/AuthCallback'
+
+import DashboardPage from './pages/dashboard/DashboardPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/auth/callback" element={<AuthCallback />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+        </Route>
+      </Route>
 
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
