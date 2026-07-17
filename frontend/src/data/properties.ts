@@ -1,0 +1,43 @@
+import type { Property } from '../types/property'
+
+export const properties: Property[] = [
+  {
+    id: '1',
+    name: 'Greenview Apartments',
+    propertyCode: 'PROP-001',
+    address: 'Kilimani',
+    city: 'Nairobi',
+    totalUnits: 24,
+    occupiedUnits: 20,
+    vacantUnits: 4,
+    status: 'active',
+    createdAt: '2026-01-10',
+    updatedAt: '2026-07-17',
+  },
+  {
+    id: '2',
+    name: 'Sunrise Residences',
+    propertyCode: 'PROP-002',
+    address: 'Rongai',
+    city: 'Kajiado',
+    totalUnits: 18,
+    occupiedUnits: 15,
+    vacantUnits: 3,
+    status: 'active',
+    createdAt: '2026-02-15',
+    updatedAt: '2026-07-17',
+  },
+  {
+    id: '3',
+    name: 'Lakeview Estate',
+    propertyCode: 'PROP-003',
+    address: 'Milimani',
+    city: 'Kisumu',
+    totalUnits: 30,
+    occupiedUnits: 24,
+    vacantUnits: 6,
+    status: 'active',
+    createdAt: '2026-03-01',
+    updatedAt: '2026-07-17',
+  },
+]
