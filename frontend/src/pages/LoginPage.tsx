@@ -41,7 +41,7 @@ export default function LoginPage() {
 
     try {
       await signIn(parsed.data);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       setAuthError(
         error instanceof Error
