@@ -5,7 +5,7 @@ const features = [
     icon: 'properties',
     title: 'Wide Range of Properties',
     description:
-      'From cozy apartments to luxury villas, we offer diverse options to suit every need.',
+      'From cozy apartments to luxury villas, we offer diverse options to suit your need.',
   },
   {
     icon: 'agents',
