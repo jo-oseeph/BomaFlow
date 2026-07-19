@@ -34,13 +34,13 @@ export default function AuthCallback() {
       }
 
       if (data.session) {
-        navigate('/', { replace: true })
+        navigate('/dashboard', { replace: true })
         return
       }
 
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session) {
-          navigate('/', { replace: true })
+          navigate('/dashboard', { replace: true })
         }
       })
 
@@ -48,7 +48,7 @@ export default function AuthCallback() {
         if (!active) return
         const { data: retry } = await supabase.auth.getSession()
         if (retry.session) {
-          navigate('/', { replace: true })
+          navigate('/dashboard', { replace: true })
         } else {
           setError('Sign-in could not be completed. Please try again.')
         }
