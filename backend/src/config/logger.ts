@@ -1,13 +1,15 @@
 import pino from 'pino'
-import { env } from './env'
 
-export const logger = pino({
-  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
+import { env } from './env.js'
 
-  transport:
-    env.NODE_ENV === 'production'
-      ? undefined
-      : {
+const loggerOptions =
+  env.NODE_ENV === 'production'
+    ? {
+        level: 'info',
+      }
+    : {
+        level: 'debug',
+        transport: {
           target: 'pino-pretty',
           options: {
             colorize: true,
@@ -15,4 +17,6 @@ export const logger = pino({
             ignore: 'pid,hostname',
           },
         },
-})
+      }
+
+export const logger = pino(loggerOptions)
