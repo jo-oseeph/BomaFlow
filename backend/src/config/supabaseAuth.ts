@@ -2,15 +2,16 @@
  * BomaFlow
  * File: src/config/supabase.ts
  *
- * Creates the Supabase clients used by the application.
+ * Purpose:
+ * Creates the Supabase clients used throughout the application.
  *
  * - supabase:
  *   Uses the ANON key.
- *   Used for login, logout and validating user JWTs.
+ *   Used for login, logout, getUser(), refresh session, etc.
  *
  * - supabaseAdmin:
  *   Uses the SERVICE ROLE key.
- *   Used ONLY for privileged admin operations.
+ *   Used ONLY for privileged admin operations such as creating users.
  */
 
 import { createClient } from '@supabase/supabase-js'
