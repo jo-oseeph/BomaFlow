@@ -6,11 +6,16 @@ import AuthFormField from "../components/auth/AuthFormField";
 import { EyeIcon, EyeOffIcon, GoogleIcon } from "../components/icons";
 import { signUp, signInWithGoogle } from "../lib/auth";
 
+const SIGNUP_ROLES = ["landlord", "manager", "tenant", "technician"] as const;
+
 const signupSchema = z
   .object({
     fullName: z.string().min(2, "Full name must be at least 2 characters"),
     email: z.string().email("Enter a valid email address"),
     phone: z.string().optional(),
+    role: z.enum(SIGNUP_ROLES, {
+      message: "Please select an account type",
+    }),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(8, "Please confirm your password"),
   })
@@ -20,6 +25,13 @@ const signupSchema = z
   });
 
 type SignupForm = z.infer<typeof signupSchema>;
+
+const ROLE_LABELS: Record<(typeof SIGNUP_ROLES)[number], string> = {
+  landlord: "Landlord",
+  manager: "Property Manager",
+  tenant: "Tenant",
+  technician: "Technician",
+};
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -40,6 +52,7 @@ export default function SignupPage() {
     setSuccessMessage(null);
 
     const parsed = signupSchema.safeParse(raw);
+
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
         const field = issue.path[0];
@@ -47,6 +60,7 @@ export default function SignupPage() {
           field === "fullName" ||
           field === "email" ||
           field === "phone" ||
+          field === "role" ||
           field === "password" ||
           field === "confirmPassword"
         ) {
@@ -57,17 +71,13 @@ export default function SignupPage() {
     }
 
     try {
-      const result = await signUp({
+      await signUp({
         email: parsed.data.email,
         password: parsed.data.password,
         fullName: parsed.data.fullName,
         phone: parsed.data.phone,
+        role: parsed.data.role,
       });
-
-      if (result.session) {
-        navigate("/");
-        return;
-      }
 
       setSuccessMessage(
         "Account created. Check your email to confirm your address, then sign in.",
@@ -123,6 +133,32 @@ export default function SignupPage() {
           error={errors.phone?.message}
           {...register("phone")}
         />
+
+        <div>
+          <label htmlFor="role" className="auth-label">
+            Account Type
+          </label>
+          <select
+            id="role"
+            className="auth-input"
+            defaultValue=""
+            {...register("role")}
+          >
+            <option value="" disabled>
+              Select account type
+            </option>
+            {SIGNUP_ROLES.map((role) => (
+              <option key={role} value={role}>
+                {ROLE_LABELS[role]}
+              </option>
+            ))}
+          </select>
+          {errors.role?.message && (
+            <p className="mt-1.5 text-xs text-red-500">
+              {errors.role.message}
+            </p>
+          )}
+        </div>
 
         <div>
           <label htmlFor="password" className="auth-label">

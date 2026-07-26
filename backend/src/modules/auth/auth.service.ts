@@ -6,37 +6,32 @@
  * Purpose:
  * Contains authentication business logic.
  */
-
 import {
   supabase,
   supabaseAdmin,
 } from '../../config/supabase.js'
-
 import {
   assignUserRole,
   createUserProfile,
   findUserProfile,
   findUserRole,
 } from './auth.repository.js'
-
 import {
   mapProfile,
   mapRole,
 } from './auth.mapper.js'
-
 import {
   InvalidCredentialsError,
   UnauthorizedError,
   UserCreationError,
 } from './auth.errors.js'
-
 import type {
   LoginInput,
-  SignUpInput,
-} from './auth.schema.js'
+  SignupInput,
+} from './auth.validation.js'
 
 export const signUp = async (
-  input: SignUpInput,
+  input: SignupInput,
 ) => {
   const {
     data,
@@ -46,33 +41,27 @@ export const signUp = async (
     password: input.password,
     email_confirm: false,
   })
-
   if (error) {
     throw new UserCreationError(error.message)
   }
-
   if (!data.user) {
     throw new UserCreationError()
   }
-
   await createUserProfile({
     id: data.user.id,
     email: input.email,
-    fullName: input.fullName,
+    fullName: input.full_name,
     phone: input.phone ?? null,
   })
-
   await assignUserRole({
     userId: data.user.id,
     role: input.role,
   })
-
   return {
     id: data.user.id,
     email: data.user.email,
   }
 }
-
 export const login = async (
   input: LoginInput,
 ) => {
@@ -83,17 +72,14 @@ export const login = async (
     email: input.email,
     password: input.password,
   })
-
   if (error) {
     throw new InvalidCredentialsError()
   }
-
   return {
     user: data.user,
     session: data.session,
   }
 }
-
 export const getCurrentUser = async (
   token: string,
 ) => {
@@ -101,19 +87,11 @@ export const getCurrentUser = async (
     data,
     error,
   } = await supabase.auth.getUser(token)
-
-  console.log('========== SUPABASE getUser ==========')
-  console.log('Error:', error)
-  console.log('User:', data.user)
-  console.log('======================================')
-
   if (error || !data.user) {
     throw new UnauthorizedError()
   }
-
   const profile = await findUserProfile(data.user.id)
   const role = await findUserRole(data.user.id)
-
   return {
     user: data.user,
     profile: mapProfile(profile),
