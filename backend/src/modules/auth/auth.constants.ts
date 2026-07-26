@@ -5,6 +5,7 @@
  */
 
 export const AUTH_ROLES = [
+  'admin',
   'landlord',
   'manager',
   'tenant',
