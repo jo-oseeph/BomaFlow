@@ -29,6 +29,7 @@ export default function LoginPage() {
     setAuthError(null);
 
     const parsed = loginSchema.safeParse(raw);
+
     if (!parsed.success) {
       for (const issue of parsed.error.issues) {
         const field = issue.path[0];
@@ -57,7 +58,9 @@ export default function LoginPage() {
         <span className="mb-2 block text-xs font-semibold tracking-[0.2em] text-gold">
           SIGN IN
         </span>
+
         <h2 className="text-2xl font-bold text-foreground">Welcome back</h2>
+
         <p className="mt-2 text-sm text-muted">
           Enter your credentials to access your BomaFlow account.
         </p>
