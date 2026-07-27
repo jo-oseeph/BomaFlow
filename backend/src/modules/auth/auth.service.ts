@@ -41,27 +41,57 @@ export const signUp = async (
     password: input.password,
     email_confirm: false,
   })
+
   if (error) {
     throw new UserCreationError(error.message)
   }
+
   if (!data.user) {
     throw new UserCreationError()
   }
+
   await createUserProfile({
     id: data.user.id,
     email: input.email,
     fullName: input.full_name,
     phone: input.phone ?? null,
   })
+
   await assignUserRole({
     userId: data.user.id,
     role: input.role,
   })
+
+  // The Admin API's createUser() does not send a confirmation email
+  // on its own - email_confirm only controls the user's confirmed
+  // status, not whether an email goes out. We explicitly trigger the
+  // confirmation email here using the public client's resend(),
+  // which uses the same email template configured in the Supabase
+  // dashboard (Authentication > Emails > Confirm signup).
+  //
+  // NOTE: Supabase's default built-in email service has a low rate
+  // limit. Until custom SMTP (e.g. Brevo) is configured in the
+  // Supabase dashboard, this may silently fail during heavy testing.
+  // See Authentication > SMTP Settings.
+  const { error: resendError } = await supabase.auth.resend({
+    type: 'signup',
+    email: input.email,
+  })
+
+  if (resendError) {
+    // Don't fail the whole signup if the email fails to send - the
+    // account was created successfully. Log it so it's visible in
+    // the backend terminal, and let the user request a resend later
+    // if needed.
+    console.error('Failed to send confirmation email:', resendError.message)
+  }
+
   return {
     id: data.user.id,
     email: data.user.email,
   }
 }
+
 export const login = async (
   input: LoginInput,
 ) => {
@@ -72,14 +102,17 @@ export const login = async (
     email: input.email,
     password: input.password,
   })
+
   if (error) {
     throw new InvalidCredentialsError()
   }
+
   return {
     user: data.user,
     session: data.session,
   }
 }
+
 export const getCurrentUser = async (
   token: string,
 ) => {
@@ -87,11 +120,14 @@ export const getCurrentUser = async (
     data,
     error,
   } = await supabase.auth.getUser(token)
+
   if (error || !data.user) {
     throw new UnauthorizedError()
   }
+
   const profile = await findUserProfile(data.user.id)
   const role = await findUserRole(data.user.id)
+
   return {
     user: data.user,
     profile: mapProfile(profile),

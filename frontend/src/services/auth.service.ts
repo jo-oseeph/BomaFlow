@@ -10,12 +10,10 @@
 
 import api from './api'
 
-
 export interface BackendAuthUser {
   id: string
   email: string | null
 }
-
 
 export interface BackendProfile {
   id: string
@@ -25,19 +23,14 @@ export interface BackendProfile {
   avatarUrl: string | null
 }
 
-
 export interface BackendAuthResponse {
   success: boolean
-
   data: {
     user: BackendAuthUser
-
     profile: BackendProfile | null
-
     role: string | null
   }
 }
-
 
 /**
  * Fetch authenticated BomaFlow user data
@@ -46,12 +39,9 @@ export interface BackendAuthResponse {
  * Authorization: Bearer <supabase_access_token>
  */
 export async function getCurrentUser() {
-
-  const response =
-    await api.get<BackendAuthResponse>(
-      '/auth/me',
-    )
+  const response = await api.get<BackendAuthResponse>(
+    '/auth/me',
+  )
 
   return response.data
-
 }
