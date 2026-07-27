@@ -1,10 +1,13 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import api from '../services/api'
+import type { AuthRole } from './permissions'
 
 export interface SignUpInput {
   email: string
   password: string
   fullName: string
   phone?: string
+  role: AuthRole
 }
 
 export interface SignInInput {
@@ -20,46 +23,35 @@ function assertSupabaseConfigured() {
   }
 }
 
-export async function signUp({ email, password, fullName, phone }: SignUpInput) {
-  assertSupabaseConfigured()
-
-  const { data, error } = await supabase.auth.signUp({
+export async function signUp({ email, password, fullName, phone, role }: SignUpInput) {
+  const response = await api.post('/auth/signup', {
     email,
     password,
-    options: {
-      data: {
-        full_name: fullName,
-        phone: phone ?? null,
-      },
-    },
+    full_name: fullName,
+    phone: phone ?? null,
+    role,
   })
-
-  if (error) throw error
-  return data
+  return response.data
 }
 
 export async function signIn({ email, password }: SignInInput) {
   assertSupabaseConfigured()
-
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   })
-
   if (error) throw error
   return data
 }
 
 export async function signInWithGoogle() {
   assertSupabaseConfigured()
-
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: `${window.location.origin}/auth/callback`,
     },
   })
-
   if (error) throw error
   return data
 }
