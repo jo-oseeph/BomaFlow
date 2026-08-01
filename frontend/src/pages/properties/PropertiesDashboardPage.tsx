@@ -1,25 +1,30 @@
 import { useNavigate } from 'react-router-dom'
-import { properties } from '../../data/properties'
+
+import { useProperties } from '../../hooks/useProperties'
 
 export default function PropertiesDashboardPage() {
   const navigate = useNavigate()
 
+  const {
+    data: properties = [],
+    isLoading,
+    isError,
+  } = useProperties()
+
   const totalProperties = properties.length
 
   const totalUnits = properties.reduce(
-    (sum, property) => sum + property.totalUnits,
+    (sum, property) => sum + property.total_units,
     0,
   )
 
-  const occupiedUnits = properties.reduce(
-    (sum, property) => sum + property.occupiedUnits,
-    0,
-  )
+  const activeProperties = properties.filter(
+    (property) => property.status === 'active',
+  ).length
 
-  const vacantUnits = properties.reduce(
-    (sum, property) => sum + property.vacantUnits,
-    0,
-  )
+  const draftProperties = properties.filter(
+    (property) => property.status === 'draft',
+  ).length
 
   const stats = [
     {
@@ -31,17 +36,37 @@ export default function PropertiesDashboardPage() {
       value: totalUnits,
     },
     {
-      title: 'Occupied Units',
-      value: occupiedUnits,
+      title: 'Active Properties',
+      value: activeProperties,
     },
     {
-      title: 'Vacant Units',
-      value: vacantUnits,
+      title: 'Draft Properties',
+      value: draftProperties,
     },
   ]
 
   function handleAddProperty() {
     navigate('/dashboard/properties/new')
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-slate-600">
+          Loading properties...
+        </p>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-red-600">
+          Failed to load properties.
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -98,19 +123,19 @@ export default function PropertiesDashboardPage() {
                 </th>
 
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Location
+                  Type
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  County
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Town
                 </th>
 
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Units
-                </th>
-
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Occupied
-                </th>
-
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Vacant
                 </th>
 
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -120,43 +145,56 @@ export default function PropertiesDashboardPage() {
             </thead>
 
             <tbody className="divide-y divide-slate-100 bg-white">
-              {properties.map((property) => (
-                <tr key={property.id}>
-                  <td className="px-6 py-4">
-                    <div>
+              {properties.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-10 text-center text-slate-500"
+                  >
+                    No properties found.
+                  </td>
+                </tr>
+              ) : (
+                properties.map((property) => (
+                  <tr key={property.id}>
+                    <td className="px-6 py-4">
                       <p className="font-medium text-slate-900">
                         {property.name}
                       </p>
+                    </td>
 
-                      <p className="text-sm text-slate-500">
-                        {property.propertyCode}
-                      </p>
-                    </div>
-                  </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {property.type ?? '-'}
+                    </td>
 
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {property.address}, {property.city}
-                  </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {property.county ?? '-'}
+                    </td>
 
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {property.totalUnits}
-                  </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {property.town ?? '-'}
+                    </td>
 
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {property.occupiedUnits}
-                  </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {property.total_units}
+                    </td>
 
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {property.vacantUnits}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                      {property.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    <td className="px-6 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          property.status === 'active'
+                            ? 'bg-green-100 text-green-700'
+                            : property.status === 'draft'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {property.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
