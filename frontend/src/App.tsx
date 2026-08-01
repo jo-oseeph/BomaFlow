@@ -15,7 +15,6 @@ import ContactPage from './pages/ContactPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import AuthCallback from './pages/AuthCallback'
-
 import DashboardPage from './pages/dashboard/DashboardPage'
 
 import PropertiesDashboardPage from './pages/properties/PropertiesDashboardPage'
@@ -30,27 +29,20 @@ import EditUnitPage from './pages/units/EditUnitPage'
 
 
 function App() {
-
   return (
-
     <Routes>
 
-
       {/* Supabase Auth Callback */}
-
       <Route
         path="/auth/callback"
         element={<AuthCallback />}
       />
 
 
-
       {/* Protected Dashboard Routes */}
-
       <Route element={<ProtectedRoute />}>
 
         <Route element={<DashboardLayout />}>
-
 
           <Route
             path="/dashboard"
@@ -58,9 +50,7 @@ function App() {
           />
 
 
-
           {/* Properties Module */}
-
 
           <Route
             path="/dashboard/properties"
@@ -86,9 +76,7 @@ function App() {
           />
 
 
-
           {/* Units Module */}
-
 
           <Route
             path="/dashboard/properties/:propertyId/units"
@@ -103,13 +91,13 @@ function App() {
 
 
           <Route
-            path="/dashboard/units/:unitId"
+            path="/dashboard/properties/:propertyId/units/:unitId"
             element={<UnitDetailsPage />}
           />
 
 
           <Route
-            path="/dashboard/units/:unitId/edit"
+            path="/dashboard/properties/:propertyId/units/:unitId/edit"
             element={<EditUnitPage />}
           />
 
@@ -119,14 +107,9 @@ function App() {
       </Route>
 
 
-
-
-
       {/* Authentication Pages */}
 
-
       <Route element={<AuthLayout />}>
-
 
         <Route
           path="/login"
@@ -139,18 +122,12 @@ function App() {
           element={<SignupPage />}
         />
 
-
       </Route>
-
-
-
 
 
       {/* Public Website Routes */}
 
-
       <Route element={<Layout />}>
-
 
         <Route
           path="/"
@@ -181,14 +158,11 @@ function App() {
           element={<ContactPage />}
         />
 
-
       </Route>
 
 
     </Routes>
-
   )
-
 }
 
 
