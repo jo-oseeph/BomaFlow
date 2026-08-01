@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { useProperties } from '../../hooks/useProperties'
 
@@ -8,7 +8,7 @@ export default function PropertiesDashboardPage() {
   const {
     data: properties = [],
     isLoading,
-    isError,
+    error,
   } = useProperties()
 
   const totalProperties = properties.length
@@ -51,20 +51,16 @@ export default function PropertiesDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-slate-600">
-          Loading properties...
-        </p>
+      <div className="rounded-xl border bg-white p-8 shadow-sm">
+        Loading properties...
       </div>
     )
   }
 
-  if (isError) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-red-600">
-          Failed to load properties.
-        </p>
+      <div className="rounded-xl border border-red-200 bg-red-50 p-8">
+        Failed to load properties.
       </div>
     )
   }
@@ -149,18 +145,24 @@ export default function PropertiesDashboardPage() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-6 py-10 text-center text-slate-500"
+                    className="px-6 py-8 text-center text-slate-500"
                   >
                     No properties found.
                   </td>
                 </tr>
               ) : (
                 properties.map((property) => (
-                  <tr key={property.id}>
+                  <tr
+                    key={property.id}
+                    className="hover:bg-slate-50"
+                  >
                     <td className="px-6 py-4">
-                      <p className="font-medium text-slate-900">
+                      <Link
+                        to={`/dashboard/properties/${property.id}`}
+                        className="font-semibold text-slate-900 hover:text-blue-600"
+                      >
                         {property.name}
-                      </p>
+                      </Link>
                     </td>
 
                     <td className="px-6 py-4 text-sm text-slate-600">
@@ -184,9 +186,7 @@ export default function PropertiesDashboardPage() {
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           property.status === 'active'
                             ? 'bg-green-100 text-green-700'
-                            : property.status === 'draft'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-slate-100 text-slate-700'
+                            : 'bg-yellow-100 text-yellow-700'
                         }`}
                       >
                         {property.status}

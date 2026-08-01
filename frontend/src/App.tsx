@@ -17,44 +17,122 @@ import SignupPage from './pages/SignupPage'
 import AuthCallback from './pages/AuthCallback'
 
 import DashboardPage from './pages/dashboard/DashboardPage'
+
 import PropertiesDashboardPage from './pages/properties/PropertiesDashboardPage'
 import AddPropertyPage from './pages/properties/AddPropertyPage'
+import PropertyDetailsPage from './pages/properties/PropertyDetailsPage'
+import EditPropertyPage from './pages/properties/EditPropertyPage'
+
 
 function App() {
   return (
     <Routes>
-      <Route path="/auth/callback" element={<AuthCallback />} />
 
+      {/* Supabase Auth Callback */}
+      <Route
+        path="/auth/callback"
+        element={<AuthCallback />}
+      />
+
+
+      {/* Protected Dashboard Routes */}
       <Route element={<ProtectedRoute />}>
+
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
+
+
+          {/* Properties Module */}
 
           <Route
             path="/dashboard/properties"
             element={<PropertiesDashboardPage />}
           />
 
+
           <Route
             path="/dashboard/properties/new"
             element={<AddPropertyPage />}
           />
+
+
+          <Route
+            path="/dashboard/properties/:propertyId"
+            element={<PropertyDetailsPage />}
+          />
+
+
+          <Route
+            path="/dashboard/properties/:propertyId/edit"
+            element={<EditPropertyPage />}
+          />
+
         </Route>
+
       </Route>
 
+
+
+      {/* Authentication Pages */}
       <Route element={<AuthLayout />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+
+        <Route
+          path="/login"
+          element={<LoginPage />}
+        />
+
+
+        <Route
+          path="/signup"
+          element={<SignupPage />}
+        />
+
       </Route>
 
+
+
+      {/* Public Website */}
       <Route element={<Layout />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/properties" element={<PropertiesPage />} />
-        <Route path="/services" element={<ServicesPage />} />
-        <Route path="/contact" element={<ContactPage />} />
+
+        <Route
+          path="/"
+          element={<HomePage />}
+        />
+
+
+        <Route
+          path="/about"
+          element={<AboutPage />}
+        />
+
+
+        <Route
+          path="/properties"
+          element={<PropertiesPage />}
+        />
+
+
+        <Route
+          path="/services"
+          element={<ServicesPage />}
+        />
+
+
+        <Route
+          path="/contact"
+          element={<ContactPage />}
+        />
+
       </Route>
+
+
     </Routes>
   )
 }
+
 
 export default App

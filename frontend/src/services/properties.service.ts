@@ -109,7 +109,7 @@ export async function updateProperty(
   payload: UpdatePropertyPayload,
 ) {
   const response =
-    await api.patch<ApiResponse<Property>>(
+    await api.put<ApiResponse<Property>>(
       `/properties/${id}`,
       payload,
     )
