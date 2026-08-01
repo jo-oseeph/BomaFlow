@@ -23,22 +23,34 @@ import AddPropertyPage from './pages/properties/AddPropertyPage'
 import PropertyDetailsPage from './pages/properties/PropertyDetailsPage'
 import EditPropertyPage from './pages/properties/EditPropertyPage'
 
+import UnitsDashboardPage from './pages/units/UnitsDashboardPage'
+import AddUnitPage from './pages/units/AddUnitPage'
+import UnitDetailsPage from './pages/units/UnitDetailsPage'
+import EditUnitPage from './pages/units/EditUnitPage'
+
 
 function App() {
+
   return (
+
     <Routes>
 
+
       {/* Supabase Auth Callback */}
+
       <Route
         path="/auth/callback"
         element={<AuthCallback />}
       />
 
 
+
       {/* Protected Dashboard Routes */}
+
       <Route element={<ProtectedRoute />}>
 
         <Route element={<DashboardLayout />}>
+
 
           <Route
             path="/dashboard"
@@ -46,7 +58,9 @@ function App() {
           />
 
 
+
           {/* Properties Module */}
+
 
           <Route
             path="/dashboard/properties"
@@ -71,14 +85,48 @@ function App() {
             element={<EditPropertyPage />}
           />
 
+
+
+          {/* Units Module */}
+
+
+          <Route
+            path="/dashboard/properties/:propertyId/units"
+            element={<UnitsDashboardPage />}
+          />
+
+
+          <Route
+            path="/dashboard/properties/:propertyId/units/new"
+            element={<AddUnitPage />}
+          />
+
+
+          <Route
+            path="/dashboard/units/:unitId"
+            element={<UnitDetailsPage />}
+          />
+
+
+          <Route
+            path="/dashboard/units/:unitId/edit"
+            element={<EditUnitPage />}
+          />
+
+
         </Route>
 
       </Route>
 
 
 
+
+
       {/* Authentication Pages */}
+
+
       <Route element={<AuthLayout />}>
+
 
         <Route
           path="/login"
@@ -91,12 +139,18 @@ function App() {
           element={<SignupPage />}
         />
 
+
       </Route>
 
 
 
-      {/* Public Website */}
+
+
+      {/* Public Website Routes */}
+
+
       <Route element={<Layout />}>
+
 
         <Route
           path="/"
@@ -127,11 +181,14 @@ function App() {
           element={<ContactPage />}
         />
 
+
       </Route>
 
 
     </Routes>
+
   )
+
 }
 
 
