@@ -10,6 +10,7 @@
 
 import api from './api'
 
+
 export interface Property {
   id: string
   org_id: string | null
@@ -43,6 +44,7 @@ export interface Property {
   updated_at: string
 }
 
+
 export interface CreatePropertyPayload {
   name: string
 
@@ -63,10 +65,12 @@ export interface CreatePropertyPayload {
   totalUnits?: number
 }
 
+
 export interface UpdatePropertyPayload
   extends Partial<CreatePropertyPayload> {
-  status?: 'draft' | 'active' | 'inactive'
+  status?: 'draft' | 'active' | 'inactive' | 'archived'
 }
+
 
 interface ApiResponse<T> {
   success: boolean
@@ -74,7 +78,9 @@ interface ApiResponse<T> {
   message?: string
 }
 
+
 export async function getProperties() {
+
   const response =
     await api.get<ApiResponse<Property[]>>(
       '/properties',
@@ -83,7 +89,11 @@ export async function getProperties() {
   return response.data.data
 }
 
-export async function getProperty(id: string) {
+
+export async function getProperty(
+  id: string,
+) {
+
   const response =
     await api.get<ApiResponse<Property>>(
       `/properties/${id}`,
@@ -92,9 +102,11 @@ export async function getProperty(id: string) {
   return response.data.data
 }
 
+
 export async function createProperty(
   payload: CreatePropertyPayload,
 ) {
+
   const response =
     await api.post<ApiResponse<Property>>(
       '/properties',
@@ -104,10 +116,12 @@ export async function createProperty(
   return response.data.data
 }
 
+
 export async function updateProperty(
   id: string,
   payload: UpdatePropertyPayload,
 ) {
+
   const response =
     await api.put<ApiResponse<Property>>(
       `/properties/${id}`,
@@ -116,12 +130,40 @@ export async function updateProperty(
 
   return response.data.data
 }
+export async function deleteProperty(
+  id: string,
+) {
 
-export async function deleteProperty(id: string) {
   const response =
     await api.delete<ApiResponse<void>>(
       `/properties/${id}`,
     )
 
   return response.data
+}
+
+
+export async function archiveProperty(
+  id: string,
+) {
+
+  const response =
+    await api.patch<ApiResponse<Property>>(
+      `/properties/${id}/archive`,
+    )
+
+  return response.data.data
+}
+
+
+export async function restoreProperty(
+  id: string,
+) {
+
+  const response =
+    await api.patch<ApiResponse<Property>>(
+      `/properties/${id}/restore`,
+    )
+
+  return response.data.data
 }

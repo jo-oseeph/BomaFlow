@@ -8,7 +8,6 @@
  */
 
 import { prisma } from '../../config/prisma.js'
-
 import {
   createProperty,
   findPropertiesByLandlord,
@@ -29,6 +28,7 @@ import type {
   UpdatePropertyInput,
 } from './properties.types.js'
 
+
 export const createPropertyService = async (
   data: CreatePropertyInput & {
     landlordId: string
@@ -46,16 +46,19 @@ export const createPropertyService = async (
   }
 }
 
+
 export const getPropertiesByLandlordService = async (
   landlordId: string,
 ) => {
   return findPropertiesByLandlord(landlordId)
 }
 
+
 export const getPropertyByIdService = async (
   id: string,
 ) => {
-  const property = await findPropertyById(id)
+  const property =
+    await findPropertyById(id)
 
   if (!property) {
     throw new PropertyNotFoundError()
@@ -63,6 +66,7 @@ export const getPropertyByIdService = async (
 
   return property
 }
+
 
 export const updatePropertyService = async (
   id: string,
@@ -89,6 +93,59 @@ export const updatePropertyService = async (
   }
 }
 
+
+export const archivePropertyService = async (
+  id: string,
+) => {
+  const existingProperty =
+    await findPropertyById(id)
+
+  if (!existingProperty) {
+    throw new PropertyNotFoundError()
+  }
+
+  try {
+    return await updateProperty(
+      id,
+      {
+        status: 'archived',
+      },
+    )
+  } catch (error) {
+    throw new PropertyUpdateError(
+      error instanceof Error
+        ? error.message
+        : undefined,
+    )
+  }
+}
+
+
+export const restorePropertyService = async (
+  id: string,
+) => {
+  const existingProperty =
+    await findPropertyById(id)
+
+  if (!existingProperty) {
+    throw new PropertyNotFoundError()
+  }
+
+  try {
+    return await updateProperty(
+      id,
+      {
+        status: 'active',
+      },
+    )
+  } catch (error) {
+    throw new PropertyUpdateError(
+      error instanceof Error
+        ? error.message
+        : undefined,
+    )
+  }
+}
 export const deletePropertyService = async (
   id: string,
 ) => {

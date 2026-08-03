@@ -15,6 +15,8 @@ import {
   getPropertyByIdService,
   updatePropertyService,
   deletePropertyService,
+  archivePropertyService,
+  restorePropertyService,
 } from './properties.service.js'
 
 
@@ -96,9 +98,6 @@ export const getPropertyController: RequestHandler = async (
     next(error)
   }
 }
-
-
-
 export const updatePropertyController: RequestHandler = async (
   req,
   res,
@@ -158,6 +157,76 @@ export const deletePropertyController: RequestHandler = async (
     res.status(200).json({
       success: true,
       message: 'Property deleted successfully',
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+
+export const archivePropertyController: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const propertyId = req.params.id
+
+    if (!propertyId || Array.isArray(propertyId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid property id',
+      })
+
+      return
+    }
+
+    const property =
+      await archivePropertyService(
+        propertyId,
+      )
+
+    res.status(200).json({
+      success: true,
+      data: property,
+      message: 'Property archived successfully',
+    })
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+
+export const restorePropertyController: RequestHandler = async (
+  req,
+  res,
+  next,
+) => {
+  try {
+    const propertyId = req.params.id
+
+    if (!propertyId || Array.isArray(propertyId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid property id',
+      })
+
+      return
+    }
+
+    const property =
+      await restorePropertyService(
+        propertyId,
+      )
+
+    res.status(200).json({
+      success: true,
+      data: property,
+      message: 'Property restored successfully',
     })
 
   } catch (error) {

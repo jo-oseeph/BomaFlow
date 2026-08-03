@@ -20,11 +20,15 @@ import {
   getPropertyController,
   updatePropertyController,
   deletePropertyController,
+  archivePropertyController,
+  restorePropertyController,
 } from './properties.controller.js'
+
 
 const router = Router()
 
 router.use(authenticate)
+
 
 router.post(
   '/',
@@ -32,11 +36,13 @@ router.post(
   createPropertyController,
 )
 
+
 router.get(
   '/',
   authorize(PERMISSIONS.PROPERTY_READ),
   getPropertiesController,
 )
+
 
 router.get(
   '/:id',
@@ -44,16 +50,31 @@ router.get(
   getPropertyController,
 )
 
+
 router.put(
   '/:id',
   authorize(PERMISSIONS.PROPERTY_UPDATE),
   updatePropertyController,
 )
+router.patch(
+  '/:id/archive',
+  authorize(PERMISSIONS.PROPERTY_UPDATE),
+  archivePropertyController,
+)
+
+
+router.patch(
+  '/:id/restore',
+  authorize(PERMISSIONS.PROPERTY_UPDATE),
+  restorePropertyController,
+)
+
 
 router.delete(
   '/:id',
   authorize(PERMISSIONS.PROPERTY_DELETE),
   deletePropertyController,
 )
+
 
 export default router

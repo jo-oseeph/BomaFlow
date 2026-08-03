@@ -18,6 +18,8 @@ import {
 
 import {
   useDeleteProperty,
+  useArchiveProperty,
+  useRestoreProperty,
 } from '../../hooks/usePropertyMutations'
 
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -53,6 +55,15 @@ export default function PropertyDetailsPage() {
     useDeleteProperty()
 
 
+  const archiveProperty =
+    useArchiveProperty()
+
+
+  const restoreProperty =
+    useRestoreProperty()
+
+
+
   const [
     showDeleteDialog,
     setShowDeleteDialog,
@@ -60,8 +71,21 @@ export default function PropertyDetailsPage() {
 
 
   const [
-    deleteError,
-    setDeleteError,
+    showArchiveDialog,
+    setShowArchiveDialog,
+  ] = useState(false)
+
+
+  const [
+    showRestoreDialog,
+    setShowRestoreDialog,
+  ] = useState(false)
+
+
+
+  const [
+    actionError,
+    setActionError,
   ] = useState<string | null>(null)
 
 
@@ -109,7 +133,7 @@ export default function PropertyDetailsPage() {
 
     try {
 
-      setDeleteError(null)
+      setActionError(null)
 
 
       await deleteProperty.mutateAsync(
@@ -125,16 +149,13 @@ export default function PropertyDetailsPage() {
       )
 
 
-    } catch (error) {
-
+    } catch {
 
       setShowDeleteDialog(false)
 
 
-      setDeleteError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to delete property.',
+      setActionError(
+        'Unable to delete property. This property still contains units. Remove units first or archive the property.',
       )
 
     }
@@ -143,7 +164,74 @@ export default function PropertyDetailsPage() {
 
 
 
-  if (isLoading) {
+  async function handleArchive() {
+
+    if (!property) {
+      return
+    }
+
+
+    try {
+
+      setActionError(null)
+
+
+      await archiveProperty.mutateAsync(
+        property.id,
+      )
+
+
+      setShowArchiveDialog(false)
+
+
+    } catch {
+
+      setShowArchiveDialog(false)
+
+
+      setActionError(
+        'Unable to archive property.',
+      )
+
+    }
+
+  }
+
+
+
+  async function handleRestore() {
+
+    if (!property) {
+      return
+    }
+
+
+    try {
+
+      setActionError(null)
+
+
+      await restoreProperty.mutateAsync(
+        property.id,
+      )
+
+
+      setShowRestoreDialog(false)
+
+
+    } catch {
+
+      setShowRestoreDialog(false)
+
+
+      setActionError(
+        'Unable to restore property.',
+      )
+
+    }
+
+  }
+    if (isLoading) {
 
     return (
 
@@ -235,23 +323,25 @@ export default function PropertyDetailsPage() {
     <div className="space-y-6">
 
 
-      {deleteError && (
+
+      {actionError && (
 
         <div className="rounded-xl border border-red-200 bg-red-50 p-6">
 
           <h2 className="text-lg font-semibold text-red-700">
-            Unable to delete property
+            Property Action Failed
           </h2>
 
 
           <p className="mt-2 text-red-600">
-            This property still contains units.
-            Remove units first or archive the property.
+            {actionError}
           </p>
 
         </div>
 
       )}
+
+
 
 
 
@@ -261,24 +351,33 @@ export default function PropertyDetailsPage() {
         <div>
 
           <h1 className="text-3xl font-bold text-slate-900">
+
             {property.name}
+
           </h1>
 
 
           <p className="mt-2 text-slate-600">
+
             Property Details
+
           </p>
 
 
         </div>
 
 
+
+
         <div className="flex gap-3">
 
 
           <Link
+
             to={`/dashboard/properties/${property.id}/edit`}
+
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100"
+
           >
 
             Edit Property
@@ -286,16 +385,79 @@ export default function PropertyDetailsPage() {
           </Link>
 
 
+
+
+
+          {
+            property.status === 'archived'
+              ? (
+
+                <button
+
+                  type="button"
+
+                  onClick={() => {
+
+                    setActionError(null)
+
+                    setShowRestoreDialog(true)
+
+                  }}
+
+                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+
+                >
+
+                  Restore Property
+
+                </button>
+
+              )
+
+              : (
+
+                <button
+
+                  type="button"
+
+                  onClick={() => {
+
+                    setActionError(null)
+
+                    setShowArchiveDialog(true)
+
+                  }}
+
+                  className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
+
+                >
+
+                  Archive Property
+
+                </button>
+
+              )
+
+          }
+
+
+
+
+
           <button
+
             type="button"
+
             onClick={() => {
 
-              setDeleteError(null)
+              setActionError(null)
 
               setShowDeleteDialog(true)
 
             }}
+
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+
           >
 
             Delete Property
@@ -307,7 +469,12 @@ export default function PropertyDetailsPage() {
 
 
       </div>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+
+
+
+
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
 
 
         <div className="rounded-xl border bg-white p-5 shadow-sm">
@@ -380,14 +547,11 @@ export default function PropertyDetailsPage() {
 
 
       </div>
-
-
-
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
 
         <div className="rounded-xl border bg-white p-6 shadow-sm">
+
 
           <h2 className="mb-4 text-lg font-semibold">
             Basic Information
@@ -454,6 +618,7 @@ export default function PropertyDetailsPage() {
 
           </dl>
 
+
         </div>
 
 
@@ -463,7 +628,7 @@ export default function PropertyDetailsPage() {
         <div className="rounded-xl border bg-white p-6 shadow-sm">
 
 
-          <h2 className="mb-4 text-lg font-semibold">
+          <h2 className="mb-4 text-lg-semibold">
             Location
           </h2>
 
@@ -524,7 +689,7 @@ export default function PropertyDetailsPage() {
 
 
 
-      <div className="rounded-xl.border bg-white p-6 shadow-sm">
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
 
 
         <div className="mb-4 flex items-center justify-between">
@@ -549,85 +714,98 @@ export default function PropertyDetailsPage() {
 
 
 
-        {unitsLoading ? (
-
-          <p className="text-slate-600">
-            Loading units...
-          </p>
 
 
-        ) : units && units.length > 0 ? (
+        {
+          unitsLoading ? (
+
+            <p className="text-slate-600">
+              Loading units...
+            </p>
 
 
-          <div className="space-y-3">
+          ) : units && units.length > 0 ? (
 
 
-            {units.map((unit) => (
+            <div className="space-y-3">
 
 
-              <Link
-                key={unit.id}
-                to={`/dashboard/properties/${property.id}/units/${unit.id}`}
-                className="block rounded-lg border p-4 hover:bg-slate-50"
-              >
+              {
+                units.map((unit) => (
+
+                  <Link
+
+                    key={unit.id}
+
+                    to={`/dashboard/properties/${property.id}/units/${unit.id}`}
+
+                    className="block rounded-lg border p-4 hover:bg-slate-50"
+
+                  >
 
 
-                <div className="flex justify-between">
+                    <div className="flex justify-between">
 
 
-                  <div>
+                      <div>
 
-                    <p className="font-medium">
-                      Unit {unit.unit_number}
-                    </p>
-
-
-                    <p className="text-sm text-slate-500">
-
-                      {unit.bedrooms ?? 0} bedrooms · {unit.bathrooms ?? 0} bathrooms
-
-                    </p>
+                        <p className="font-medium">
+                          Unit {unit.unit_number}
+                        </p>
 
 
-                  </div>
+                        <p className="text-sm text-slate-500">
+
+                          {unit.bedrooms ?? 0} bedrooms · {unit.bathrooms ?? 0} bathrooms
+
+                        </p>
+
+
+                      </div>
 
 
 
-                  <div className="text-right">
+
+                      <div className="text-right">
 
 
-                    <p className="font-medium">
-                      KES {unit.rent_amount}
-                    </p>
+                        <p className="font-medium">
+                          KES {unit.rent_amount}
+                        </p>
 
 
-                    <p className="text-sm text-slate-500">
-                      {unit.status}
-                    </p>
+                        <p className="text-sm text-slate-500">
+                          {unit.status}
+                        </p>
 
 
-                  </div>
+                      </div>
 
 
-                </div>
+                    </div>
 
 
-              </Link>
+                  </Link>
+
+                ))
+
+              }
 
 
-            ))}
+            </div>
 
 
-          </div>
+          ) : (
 
 
-        ) : (
+            <p className="text-slate-600">
+              No units added yet.
+            </p>
 
-          <p className="text-slate-600">
-            No units added yet.
-          </p>
 
-        )}
+          )
+
+        }
 
 
       </div>
@@ -658,19 +836,103 @@ export default function PropertyDetailsPage() {
 
 
 
+
+
       <ConfirmDialog
 
-        open={
-          showDeleteDialog
+        open={showArchiveDialog}
+
+        title="Archive Property"
+
+        message={
+          <>
+            Are you sure you want to archive{' '}
+
+            <strong>
+              {property.name}
+            </strong>
+
+            ?
+
+            <br />
+
+            <br />
+
+            Archived properties will no longer appear as active properties.
+          </>
         }
 
+        confirmText="Archive Property"
+
+        confirmVariant="danger"
+
+        loading={
+          archiveProperty.isPending
+        }
+
+        onCancel={() =>
+          setShowArchiveDialog(false)
+        }
+
+        onConfirm={
+          handleArchive
+        }
+
+      />
+
+
+
+
+
+      <ConfirmDialog
+
+        open={showRestoreDialog}
+
+        title="Restore Property"
+
+        message={
+          <>
+            Are you sure you want to restore{' '}
+
+            <strong>
+              {property.name}
+            </strong>
+
+            ?
+
+          </>
+        }
+
+        confirmText="Restore Property"
+
+        loading={
+          restoreProperty.isPending
+        }
+
+        onCancel={() =>
+          setShowRestoreDialog(false)
+        }
+
+        onConfirm={
+          handleRestore
+        }
+
+      />
+
+
+
+
+
+      <ConfirmDialog
+
+        open={showDeleteDialog}
 
         title="Delete Property"
-
 
         message={
 
           <>
+
             Are you sure you want to delete{' '}
 
             <strong>
@@ -689,29 +951,24 @@ export default function PropertyDetailsPage() {
 
         }
 
-
         confirmText="Delete Property"
 
-
         confirmVariant="danger"
-
 
         loading={
           deleteProperty.isPending
         }
 
-
         onCancel={() =>
           setShowDeleteDialog(false)
         }
-
 
         onConfirm={
           handleDelete
         }
 
-
       />
+
 
 
     </div>
