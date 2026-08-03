@@ -81,6 +81,7 @@ export function useUpdateUnit() {
       id,
       payload,
     }: {
+
       id: string
 
       payload: UpdateUnitPayload
@@ -118,6 +119,7 @@ export function useUpdateUnit() {
 
       })
 
+
     },
 
   })
@@ -145,7 +147,21 @@ export function useDeleteUnit() {
 
 
 
-    onSuccess: () => {
+    onSuccess: (
+      _,
+      id,
+    ) => {
+
+
+      queryClient.removeQueries({
+
+        queryKey:
+          unitKeys.detail(
+            id,
+          ),
+
+      })
+
 
       queryClient.invalidateQueries({
 
@@ -153,6 +169,7 @@ export function useDeleteUnit() {
           unitKeys.all,
 
       })
+
 
     },
 

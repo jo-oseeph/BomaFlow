@@ -7,6 +7,8 @@
  * Contains business logic related to properties.
  */
 
+import { prisma } from '../../config/prisma.js'
+
 import {
   createProperty,
   findPropertiesByLandlord,
@@ -27,7 +29,6 @@ import type {
   UpdatePropertyInput,
 } from './properties.types.js'
 
-
 export const createPropertyService = async (
   data: CreatePropertyInput & {
     landlordId: string
@@ -36,7 +37,6 @@ export const createPropertyService = async (
 ) => {
   try {
     return await createProperty(data)
-
   } catch (error) {
     throw new PropertyCreationError(
       error instanceof Error
@@ -46,13 +46,11 @@ export const createPropertyService = async (
   }
 }
 
-
 export const getPropertiesByLandlordService = async (
   landlordId: string,
 ) => {
   return findPropertiesByLandlord(landlordId)
 }
-
 
 export const getPropertyByIdService = async (
   id: string,
@@ -65,7 +63,6 @@ export const getPropertyByIdService = async (
 
   return property
 }
-
 
 export const updatePropertyService = async (
   id: string,
@@ -83,7 +80,6 @@ export const updatePropertyService = async (
       id,
       data,
     )
-
   } catch (error) {
     throw new PropertyUpdateError(
       error instanceof Error
@@ -92,7 +88,6 @@ export const updatePropertyService = async (
     )
   }
 }
-
 
 export const deletePropertyService = async (
   id: string,
@@ -104,9 +99,21 @@ export const deletePropertyService = async (
     throw new PropertyNotFoundError()
   }
 
+  const unitCount =
+    await prisma.units.count({
+      where: {
+        property_id: id,
+      },
+    })
+
+  if (unitCount > 0) {
+    throw new PropertyDeleteError(
+      `This property cannot be deleted because it still contains ${unitCount} unit${unitCount === 1 ? '' : 's'}. Remove the units first or archive the property.`,
+    )
+  }
+
   try {
     return await deleteProperty(id)
-
   } catch (error) {
     throw new PropertyDeleteError(
       error instanceof Error
