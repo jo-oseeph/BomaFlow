@@ -8,12 +8,11 @@ import { Router } from 'express'
 import { env } from '../config/env.js'
 
 import authRoutes from '../modules/auth/index.js'
+import filesRoutes from '../modules/files/index.js'
 import propertiesRoutes from '../modules/properties/index.js'
 import unitsRoutes from '../modules/units/index.js'
 
-
 const router = Router()
-
 
 router.get(
   '/health',
@@ -26,23 +25,24 @@ router.get(
   },
 )
 
-
 router.use(
   '/auth',
   authRoutes,
 )
-
 
 router.use(
   '/properties',
   propertiesRoutes,
 )
 
-
 router.use(
   '/units',
   unitsRoutes,
 )
 
+router.use(
+  '/files',
+  filesRoutes,
+)
 
 export default router
