@@ -7,10 +7,13 @@
  * Handles all database operations related to properties.
  */
 
+import { Prisma } from '@prisma/client'
+
 import { prisma } from '../../config/prisma.js'
 
 import type {
   CreatePropertyInput,
+  PropertySearchFilters,
   UpdatePropertyInput,
 } from './properties.types.js'
 
@@ -56,16 +59,56 @@ export const createProperty = async (
 }
 
 export const findPropertiesByLandlord = async (
-  landlordId: string,
+  filters: PropertySearchFilters,
 ) => {
+  const {
+    landlordId,
+    search,
+    status,
+    county,
+    town,
+    type,
+    page = 1,
+    limit = 10,
+  } = filters
+
+  const where: Prisma.propertiesWhereInput = {
+    landlord_id: landlordId,
+  }
+
+  if (search) {
+    where.name = {
+      contains: search,
+      mode: 'insensitive',
+    }
+  }
+
+  if (status) {
+    where.status = status
+  }
+
+  if (county) {
+    where.county = county
+  }
+
+  if (town) {
+    where.town = town
+  }
+
+  if (type) {
+    where.type = type
+  }
+
   return prisma.properties.findMany({
-    where: {
-      landlord_id: landlordId,
-    },
+    where,
 
     orderBy: {
       created_at: 'desc',
     },
+
+    skip: (page - 1) * limit,
+
+    take: limit,
   })
 }
 
@@ -79,12 +122,6 @@ export const findPropertyById = async (
   })
 }
 
-/**
- * Returns a property only if it belongs
- * to the specified landlord.
- *
- * Used for ownership validation.
- */
 export const findPropertyByIdForLandlord = async (
   id: string,
   landlordId: string,

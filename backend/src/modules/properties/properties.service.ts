@@ -26,6 +26,7 @@ import {
 
 import type {
   CreatePropertyInput,
+  PropertySearchFilters,
   UpdatePropertyInput,
 } from './properties.types.js'
 
@@ -47,9 +48,9 @@ export const createPropertyService = async (
 }
 
 export const getPropertiesByLandlordService = async (
-  landlordId: string,
+  filters: PropertySearchFilters,
 ) => {
-  return findPropertiesByLandlord(landlordId)
+  return findPropertiesByLandlord(filters)
 }
 
 export const getPropertyByIdService = async (

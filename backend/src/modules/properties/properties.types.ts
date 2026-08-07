@@ -6,10 +6,8 @@
 
 import type { PROPERTY_STATUSES } from './properties.constants.js'
 
-
 export type PropertyStatus =
   (typeof PROPERTY_STATUSES)[number]
-
 
 export interface CreatePropertyInput {
   name: string
@@ -38,7 +36,6 @@ export interface CreatePropertyInput {
 
   totalUnits?: number
 }
-
 
 export interface UpdatePropertyInput {
   name?: string
@@ -70,6 +67,23 @@ export interface UpdatePropertyInput {
   status?: PropertyStatus
 }
 
+export interface PropertySearchFilters {
+  landlordId: string
+
+  search?: string | undefined
+
+  status?: PropertyStatus | undefined
+
+  county?: string | undefined
+
+  town?: string | undefined
+
+  type?: string | undefined
+
+  page?: number | undefined
+
+  limit?: number | undefined
+}
 
 export interface PropertyResponse {
   id: string
