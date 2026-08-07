@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useProperties } from '../../hooks/useProperties'
@@ -5,26 +6,107 @@ import { useProperties } from '../../hooks/useProperties'
 export default function PropertiesDashboardPage() {
   const navigate = useNavigate()
 
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [county, setCounty] = useState('')
+  const [town, setTown] = useState('')
+  const [propertyType, setPropertyType] = useState('')
+
   const {
     data: properties = [],
     isLoading,
     error,
   } = useProperties()
 
-  const totalProperties = properties.length
+  const filteredProperties = useMemo(() => {
+    return properties.filter((property) => {
+      const matchesSearch =
+        search.trim() === '' ||
+        property.name
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        (property.address ?? '')
+          .toLowerCase()
+          .includes(search.toLowerCase())
 
-  const totalUnits = properties.reduce(
-    (sum, property) => sum + property.total_units,
-    0,
-  )
+      const matchesStatus =
+        status === '' ||
+        property.status === status
 
-  const activeProperties = properties.filter(
-    (property) => property.status === 'active',
-  ).length
+      const matchesCounty =
+        county === '' ||
+        property.county === county
 
-  const draftProperties = properties.filter(
-    (property) => property.status === 'draft',
-  ).length
+      const matchesTown =
+        town === '' ||
+        property.town === town
+
+      const matchesType =
+        propertyType === '' ||
+        property.type === propertyType
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesCounty &&
+        matchesTown &&
+        matchesType
+      )
+    })
+  }, [
+    properties,
+    search,
+    status,
+    county,
+    town,
+    propertyType,
+  ])
+
+  const totalProperties =
+    filteredProperties.length
+
+  const totalUnits =
+    filteredProperties.reduce(
+      (sum, property) =>
+        sum + property.total_units,
+      0,
+    )
+
+  const activeProperties =
+    filteredProperties.filter(
+      property =>
+        property.status === 'active',
+    ).length
+
+  const draftProperties =
+    filteredProperties.filter(
+      property =>
+        property.status === 'draft',
+    ).length
+
+  const counties = [
+    ...new Set(
+      properties
+        .map(p => p.county)
+        .filter(Boolean),
+    ),
+  ] as string[]
+
+  const towns = [
+    ...new Set(
+      properties
+        .map(p => p.town)
+        .filter(Boolean),
+    ),
+  ] as string[]
+
+  const propertyTypes = [
+    ...new Set(
+      properties
+        .map(p => p.type)
+        .filter(Boolean),
+    ),
+  ] as string[]
 
   const stats = [
     {
@@ -49,9 +131,17 @@ export default function PropertiesDashboardPage() {
     navigate('/dashboard/properties/new')
   }
 
+  function clearFilters() {
+    setSearch('')
+    setStatus('')
+    setCounty('')
+    setTown('')
+    setPropertyType('')
+  }
+
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-white p-8 shadow-sm">
+      <div className="p-8 text-center">
         Loading properties...
       </div>
     )
@@ -59,15 +149,14 @@ export default function PropertiesDashboardPage() {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-8">
+      <div className="p-8 text-center text-red-600">
         Failed to load properties.
       </div>
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+  return (    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">
             Properties
@@ -86,8 +175,124 @@ export default function PropertiesDashboardPage() {
         </button>
       </div>
 
+      <div className="rounded-xl border bg-white p-5 shadow-sm">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <input
+            type="text"
+            placeholder="Search property..."
+            value={search}
+            onChange={event =>
+              setSearch(event.target.value)
+            }
+            className="rounded-lg border px-3 py-2"
+          />
+
+          <select
+            value={status}
+            onChange={event =>
+              setStatus(event.target.value)
+            }
+            className="rounded-lg border px-3 py-2"
+          >
+            <option value="">
+              All Status
+            </option>
+
+            <option value="active">
+              Active
+            </option>
+
+            <option value="draft">
+              Draft
+            </option>
+
+            <option value="inactive">
+              Inactive
+            </option>
+
+            <option value="archived">
+              Archived
+            </option>
+          </select>
+
+          <select
+            value={county}
+            onChange={event =>
+              setCounty(event.target.value)
+            }
+            className="rounded-lg border px-3 py-2"
+          >
+            <option value="">
+              All Counties
+            </option>
+
+            {counties.map(countyName => (
+              <option
+                key={countyName}
+                value={countyName}
+              >
+                {countyName}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={town}
+            onChange={event =>
+              setTown(event.target.value)
+            }
+            className="rounded-lg border px-3 py-2"
+          >
+            <option value="">
+              All Towns
+            </option>
+
+            {towns.map(townName => (
+              <option
+                key={townName}
+                value={townName}
+              >
+                {townName}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={propertyType}
+            onChange={event =>
+              setPropertyType(
+                event.target.value,
+              )
+            }
+            className="rounded-lg border px-3 py-2"
+          >
+            <option value="">
+              All Types
+            </option>
+
+            {propertyTypes.map(type => (
+              <option
+                key={type}
+                value={type}
+              >
+                {type}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={clearFilters}
+            className="rounded-lg border px-4 py-2 text-sm hover:bg-slate-50"
+          >
+            Clear Filters
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat) => (
+        {stats.map(stat => (
           <div
             key={stat.title}
             className="rounded-xl border bg-white p-5 shadow-sm"
@@ -102,8 +307,7 @@ export default function PropertiesDashboardPage() {
           </div>
         ))}
       </div>
-
-      <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+            <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
         <div className="border-b px-6 py-4">
           <h2 className="text-lg font-semibold">
             Property List
@@ -137,21 +341,25 @@ export default function PropertiesDashboardPage() {
                 <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Status
                 </th>
+
+                <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Actions
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100 bg-white">
-              {properties.length === 0 ? (
+              {filteredProperties.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-slate-500"
+                    colSpan={7}
+                    className="px-6 py-10 text-center text-slate-500"
                   >
-                    No properties found.
+                    No properties match the selected filters.
                   </td>
                 </tr>
               ) : (
-                properties.map((property) => (
+                filteredProperties.map(property => (
                   <tr
                     key={property.id}
                     className="hover:bg-slate-50"
@@ -186,11 +394,33 @@ export default function PropertiesDashboardPage() {
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           property.status === 'active'
                             ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
+                            : property.status === 'draft'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : property.status === 'archived'
+                                ? 'bg-slate-200 text-slate-700'
+                                : 'bg-red-100 text-red-700'
                         }`}
                       >
                         {property.status}
                       </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/dashboard/properties/${property.id}`}
+                          className="rounded-md border px-3 py-1 text-sm hover:bg-slate-100"
+                        >
+                          View
+                        </Link>
+
+                        <Link
+                          to={`/dashboard/properties/${property.id}/edit`}
+                          className="rounded-md border px-3 py-1 text-sm hover:bg-slate-100"
+                        >
+                          Edit
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -199,6 +429,6 @@ export default function PropertiesDashboardPage() {
           </table>
         </div>
       </div>
-    </div>
+          </div>
   )
 }

@@ -19,6 +19,8 @@ import {
   restorePropertyService,
 } from './properties.service.js'
 
+import type { PropertyStatus } from './properties.types.js'
+
 export const createPropertyController: RequestHandler = async (
   req,
   res,
@@ -46,10 +48,55 @@ export const getPropertiesController: RequestHandler = async (
   next,
 ) => {
   try {
+    const {
+      search,
+      status,
+      county,
+      town,
+      type,
+      page,
+      limit,
+    } = req.query
+
     const properties =
-      await getPropertiesByLandlordService(
-        req.user!.id,
-      )
+      await getPropertiesByLandlordService({
+        landlordId: req.user!.id,
+
+        search:
+          typeof search === 'string'
+            ? search
+            : undefined,
+
+        status:
+          typeof status === 'string'
+            ? (status as PropertyStatus)
+            : undefined,
+
+        county:
+          typeof county === 'string'
+            ? county
+            : undefined,
+
+        town:
+          typeof town === 'string'
+            ? town
+            : undefined,
+
+        type:
+          typeof type === 'string'
+            ? type
+            : undefined,
+
+        page:
+          typeof page === 'string'
+            ? Number(page)
+            : undefined,
+
+        limit:
+          typeof limit === 'string'
+            ? Number(limit)
+            : undefined,
+      })
 
     res.status(200).json({
       success: true,
