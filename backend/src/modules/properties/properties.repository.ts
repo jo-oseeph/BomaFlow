@@ -14,7 +14,6 @@ import type {
   UpdatePropertyInput,
 } from './properties.types.js'
 
-
 export const createProperty = async (
   data: CreatePropertyInput & {
     landlordId: string
@@ -56,7 +55,6 @@ export const createProperty = async (
   })
 }
 
-
 export const findPropertiesByLandlord = async (
   landlordId: string,
 ) => {
@@ -71,7 +69,6 @@ export const findPropertiesByLandlord = async (
   })
 }
 
-
 export const findPropertyById = async (
   id: string,
 ) => {
@@ -82,6 +79,23 @@ export const findPropertyById = async (
   })
 }
 
+/**
+ * Returns a property only if it belongs
+ * to the specified landlord.
+ *
+ * Used for ownership validation.
+ */
+export const findPropertyByIdForLandlord = async (
+  id: string,
+  landlordId: string,
+) => {
+  return prisma.properties.findFirst({
+    where: {
+      id,
+      landlord_id: landlordId,
+    },
+  })
+}
 
 export const updateProperty = async (
   id: string,
@@ -151,7 +165,6 @@ export const updateProperty = async (
     },
   })
 }
-
 
 export const deleteProperty = async (
   id: string,

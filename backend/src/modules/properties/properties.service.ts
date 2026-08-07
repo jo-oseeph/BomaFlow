@@ -8,10 +8,11 @@
  */
 
 import { prisma } from '../../config/prisma.js'
+
 import {
   createProperty,
   findPropertiesByLandlord,
-  findPropertyById,
+  findPropertyByIdForLandlord,
   updateProperty,
   deleteProperty,
 } from './properties.repository.js'
@@ -27,7 +28,6 @@ import type {
   CreatePropertyInput,
   UpdatePropertyInput,
 } from './properties.types.js'
-
 
 export const createPropertyService = async (
   data: CreatePropertyInput & {
@@ -46,19 +46,21 @@ export const createPropertyService = async (
   }
 }
 
-
 export const getPropertiesByLandlordService = async (
   landlordId: string,
 ) => {
   return findPropertiesByLandlord(landlordId)
 }
 
-
 export const getPropertyByIdService = async (
   id: string,
+  landlordId: string,
 ) => {
   const property =
-    await findPropertyById(id)
+    await findPropertyByIdForLandlord(
+      id,
+      landlordId,
+    )
 
   if (!property) {
     throw new PropertyNotFoundError()
@@ -67,13 +69,16 @@ export const getPropertyByIdService = async (
   return property
 }
 
-
 export const updatePropertyService = async (
   id: string,
+  landlordId: string,
   data: UpdatePropertyInput,
 ) => {
   const existingProperty =
-    await findPropertyById(id)
+    await findPropertyByIdForLandlord(
+      id,
+      landlordId,
+    )
 
   if (!existingProperty) {
     throw new PropertyNotFoundError()
@@ -93,64 +98,15 @@ export const updatePropertyService = async (
   }
 }
 
-
-export const archivePropertyService = async (
-  id: string,
-) => {
-  const existingProperty =
-    await findPropertyById(id)
-
-  if (!existingProperty) {
-    throw new PropertyNotFoundError()
-  }
-
-  try {
-    return await updateProperty(
-      id,
-      {
-        status: 'archived',
-      },
-    )
-  } catch (error) {
-    throw new PropertyUpdateError(
-      error instanceof Error
-        ? error.message
-        : undefined,
-    )
-  }
-}
-
-
-export const restorePropertyService = async (
-  id: string,
-) => {
-  const existingProperty =
-    await findPropertyById(id)
-
-  if (!existingProperty) {
-    throw new PropertyNotFoundError()
-  }
-
-  try {
-    return await updateProperty(
-      id,
-      {
-        status: 'active',
-      },
-    )
-  } catch (error) {
-    throw new PropertyUpdateError(
-      error instanceof Error
-        ? error.message
-        : undefined,
-    )
-  }
-}
 export const deletePropertyService = async (
   id: string,
+  landlordId: string,
 ) => {
   const existingProperty =
-    await findPropertyById(id)
+    await findPropertyByIdForLandlord(
+      id,
+      landlordId,
+    )
 
   if (!existingProperty) {
     throw new PropertyNotFoundError()
@@ -178,4 +134,42 @@ export const deletePropertyService = async (
         : undefined,
     )
   }
+}
+
+export const archivePropertyService = async (
+  id: string,
+  landlordId: string,
+) => {
+  const existingProperty =
+    await findPropertyByIdForLandlord(
+      id,
+      landlordId,
+    )
+
+  if (!existingProperty) {
+    throw new PropertyNotFoundError()
+  }
+
+  return updateProperty(id, {
+    status: 'archived',
+  })
+}
+
+export const restorePropertyService = async (
+  id: string,
+  landlordId: string,
+) => {
+  const existingProperty =
+    await findPropertyByIdForLandlord(
+      id,
+      landlordId,
+    )
+
+  if (!existingProperty) {
+    throw new PropertyNotFoundError()
+  }
+
+  return updateProperty(id, {
+    status: 'active',
+  })
 }
