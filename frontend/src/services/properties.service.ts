@@ -78,7 +78,33 @@ export interface UpdatePropertyPayload
   status?: 'draft' | 'active' | 'inactive' | 'archived'
 }
 
-interface ApiResponse<T> {
+export interface PropertyFile {
+  id: string
+  owner_id?: string | null
+  entity_type: string
+  entity_id: string | null
+  purpose: string | null
+  bucket: string
+  path: string
+  mime: string | null
+  size: number | null
+  checksum?: string | null
+  sort_order: number | null
+  is_public: boolean
+  metadata: unknown
+  created_at: string
+  updated_at?: string
+  url?: string
+}
+
+export interface UploadPropertyFileOptions {
+  file: File
+  purpose?: 'image' | 'document' | 'agreement' | 'attachment'
+  sortOrder?: number
+  isPublic?: boolean
+}
+
+interface ApiResponse<T = unknown> {
   success: boolean
   data: T
   message?: string
@@ -138,7 +164,7 @@ export async function deleteProperty(
   id: string,
 ) {
   const response =
-    await api.delete<ApiResponse<null>>(
+    await api.delete<ApiResponse>(
       `/properties/${id}`,
     )
 
@@ -165,4 +191,73 @@ export async function restoreProperty(
     )
 
   return response.data.data
+}
+
+export async function uploadPropertyFile(
+  propertyId: string,
+  options: UploadPropertyFileOptions,
+) {
+  const formData = new FormData()
+
+  formData.append(
+    'file',
+    options.file,
+  )
+
+  if (options.purpose !== undefined) {
+    formData.append(
+      'purpose',
+      options.purpose,
+    )
+  }
+
+  if (options.sortOrder !== undefined) {
+    formData.append(
+      'sortOrder',
+      String(options.sortOrder),
+    )
+  }
+
+  if (options.isPublic !== undefined) {
+    formData.append(
+      'isPublic',
+      String(options.isPublic),
+    )
+  }
+
+  const response =
+    await api.post<ApiResponse<PropertyFile>>(
+      `/properties/${propertyId}/files`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    )
+
+  return response.data.data
+}
+
+export async function getPropertyFiles(
+  propertyId: string,
+) {
+  const response =
+    await api.get<ApiResponse<PropertyFile[]>>(
+      `/properties/${propertyId}/files`,
+    )
+
+  return response.data.data
+}
+
+export async function deletePropertyFile(
+  propertyId: string,
+  fileId: string,
+) {
+  const response =
+    await api.delete<ApiResponse>(
+      `/properties/${propertyId}/files/${fileId}`,
+    )
+
+  return response.data
 }
