@@ -11,6 +11,7 @@ import { Router } from 'express'
 
 import { authenticate } from '../../middleware/authenticate.js'
 import { authorize } from '../../middleware/authorize.js'
+import { upload } from '../../middleware/upload.js'
 
 import { PERMISSIONS } from '../auth/auth.permissions.js'
 
@@ -23,6 +24,12 @@ import {
   archivePropertyController,
   restorePropertyController,
 } from './properties.controller.js'
+
+import {
+  uploadPropertyFileController,
+  getPropertyFilesController,
+  deletePropertyFileController,
+} from './properties.files.controller.js'
 
 const router = Router()
 
@@ -68,6 +75,26 @@ router.delete(
   '/:id',
   authorize(PERMISSIONS.PROPERTY_DELETE),
   deletePropertyController,
+)
+
+// Property files
+router.post(
+  '/:id/files',
+  authorize(PERMISSIONS.PROPERTY_UPDATE),
+  upload.single('file'),
+  uploadPropertyFileController,
+)
+
+router.get(
+  '/:id/files',
+  authorize(PERMISSIONS.PROPERTY_READ),
+  getPropertyFilesController,
+)
+
+router.delete(
+  '/:id/files/:fileId',
+  authorize(PERMISSIONS.PROPERTY_UPDATE),
+  deletePropertyFileController,
 )
 
 export default router
