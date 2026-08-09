@@ -16,6 +16,10 @@ deleteFileService,
 } from '../files/files.service.js'
 
 import {
+createSignedUrlForStorageFile,
+} from '../../services/storage.service.js'
+
+import {
 findPropertyByIdForLandlord,
 } from './properties.repository.js'
 
@@ -93,9 +97,23 @@ if (!property) {
 throw new PropertyNotFoundError()
 }
 
-return getFilesByEntityService(
+ const files =
+await getFilesByEntityService(
 'property',
 propertyId,
+)
+
+return Promise.all(
+files.map(
+async (file) => ({
+...file,
+url:
+await createSignedUrlForStorageFile(
+file.bucket,
+file.path,
+),
+}),
+),
 )
 }
 

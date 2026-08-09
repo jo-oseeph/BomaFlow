@@ -47,6 +47,33 @@ export const uploadFileToStorage = async (
 }
 
 
+export const createSignedUrlForStorageFile = async (
+bucket: string,
+path: string,
+expiresIn = 3600,
+) => {
+
+const {
+data,
+error,
+} =
+await supabaseAdmin
+.storage
+.from(bucket)
+.createSignedUrl(
+path,
+expiresIn,
+)
+
+if (error) {
+throw new Error(
+error.message,
+)
+}
+
+return data.signedUrl
+}
+
 export const deleteFileFromStorage = async (
   bucket: string,
   path: string,
