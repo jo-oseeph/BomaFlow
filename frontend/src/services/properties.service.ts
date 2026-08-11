@@ -97,9 +97,15 @@ export interface PropertyFile {
   url?: string
 }
 
+export type PropertyFilePurpose =
+  | 'image'
+  | 'document'
+  | 'agreement'
+  | 'attachment'
+
 export interface UploadPropertyFileOptions {
   file: File
-  purpose?: 'image' | 'document' | 'agreement' | 'attachment'
+  purpose?: PropertyFilePurpose
   sortOrder?: number
   isPublic?: boolean
 }
