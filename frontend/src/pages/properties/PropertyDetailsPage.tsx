@@ -111,6 +111,21 @@ export default function PropertyDetailsPage() {
     setIsUploadingFile,
   ] = useState(false)
 
+  const [
+    selectedDocument,
+    setSelectedDocument,
+  ] = useState<File | null>(null)
+
+  const [
+    isUploadingDocument,
+    setIsUploadingDocument,
+  ] = useState(false)
+
+  const [
+    documentError,
+    setDocumentError,
+  ] = useState<string | null>(null)
+
   const totalUnits =
     units?.length ?? 0
 
@@ -148,6 +163,14 @@ export default function PropertyDetailsPage() {
         file.mime?.startsWith(
           'image/',
         ),
+    ) ?? []
+
+  const documentFiles =
+    propertyFiles?.filter(
+      (file) =>
+        file.purpose === 'document' ||
+        file.purpose === 'agreement' ||
+        file.purpose === 'attachment',
     ) ?? []
 
   async function handleDelete() {
@@ -219,7 +242,8 @@ export default function PropertyDetailsPage() {
       )
     }
   }
-    async function handleFileUpload(
+
+  async function handleFileUpload(
     event: ChangeEvent<HTMLInputElement>,
   ) {
     const file =
@@ -233,20 +257,26 @@ export default function PropertyDetailsPage() {
 
     setFileError(null)
 
-    if (!file.type.startsWith('image/')) {
+    if (
+      ![
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+      ].includes(file.type)
+    ) {
       setFileError(
-        'Please select a valid image file.',
+        'Please select a valid JPG, PNG, or WebP image.',
       )
 
       return
     }
 
     const maxSize =
-      10 * 1024 * 1024
+      5 * 1024 * 1024
 
     if (file.size > maxSize) {
       setFileError(
-        'Image must be 10 MB or smaller.',
+        'Image must be 5 MB or smaller.',
       )
 
       return
@@ -280,15 +310,89 @@ export default function PropertyDetailsPage() {
     }
   }
 
+  async function handleDocumentUpload(
+    event: ChangeEvent<HTMLInputElement>,
+  ) {
+    const file =
+      event.target.files?.[0] ?? null
+
+    event.target.value = ''
+
+    if (!propertyId || !file) {
+      return
+    }
+
+    setDocumentError(null)
+
+    const allowedMimeTypes = [
+      'application/pdf',
+    ]
+
+    if (
+      !allowedMimeTypes.includes(
+        file.type,
+      )
+    ) {
+      setDocumentError(
+        'Please select a valid PDF document.',
+      )
+
+      return
+    }
+
+    const maxSize =
+      5 * 1024 * 1024
+
+    if (file.size > maxSize) {
+      setDocumentError(
+        'Document must be 5 MB or smaller.',
+      )
+
+      return
+    }
+
+    setSelectedDocument(file)
+
+    try {
+      setIsUploadingDocument(true)
+
+      await uploadPropertyFile.mutateAsync(
+        {
+          propertyId,
+          options: {
+            file,
+            purpose: 'document',
+            isPublic: false,
+          },
+        },
+      )
+
+      setSelectedDocument(null)
+    } catch (error) {
+      setDocumentError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to upload property document.',
+      )
+    } finally {
+      setIsUploadingDocument(false)
+    }
+  }
+
   async function handleDeleteFile(
     fileId: string,
+    type: 'image' | 'document',
   ) {
     if (!propertyId) {
       return
     }
 
     try {
-      setFileError(null)
+      if (type === 'image') {
+        setFileError(null)
+      } else {
+        setDocumentError(null)
+      }
 
       await deletePropertyFile.mutateAsync(
         {
@@ -297,12 +401,51 @@ export default function PropertyDetailsPage() {
         },
       )
     } catch (error) {
-      setFileError(
+      const message =
         error instanceof Error
           ? error.message
-          : 'Unable to delete property image.',
-      )
+          : type === 'image'
+            ? 'Unable to delete property image.'
+            : 'Unable to delete property document.'
+
+      if (type === 'image') {
+        setFileError(message)
+      } else {
+        setDocumentError(message)
+      }
     }
+  }
+
+  function formatFileSize(
+    size: number | null,
+  ) {
+    if (
+      size === null ||
+      size === undefined
+    ) {
+      return '-'
+    }
+
+    if (size < 1024) {
+      return `${size} B`
+    }
+
+    if (size < 1024 * 1024) {
+      return `${Math.ceil(size / 1024)} KB`
+    }
+
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  function getFileName(
+    path: string,
+  ) {
+    return (
+      path
+        .split('/')
+        .pop() ??
+      'File'
+    )
   }
 
   if (isLoading) {
@@ -478,7 +621,10 @@ export default function PropertyDetailsPage() {
           </p>
         </div>
       </div>
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+
+      {/* PROPERTY IMAGES */}
+
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
         <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">
@@ -486,9 +632,7 @@ export default function PropertyDetailsPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Upload photos of this property for
-              verification, management, and future
-              listings.
+              Upload photos of this property for verification, management, and future listings.
             </p>
           </div>
         </div>
@@ -505,7 +649,7 @@ export default function PropertyDetailsPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleFileUpload}
               disabled={
                 isUploadingFile ||
@@ -515,7 +659,7 @@ export default function PropertyDetailsPage() {
             />
 
             <span className="text-xs text-slate-500">
-              JPG, PNG, WebP, or GIF. Max 10 MB.
+              JPG, PNG, or WebP. Max 5 MB.
             </span>
           </div>
 
@@ -569,21 +713,12 @@ export default function PropertyDetailsPage() {
                 <div className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-700">
-                      {file.path
-                        .split('/')
-                        .pop() ??
-                        'Property image'}
+                      {getFileName(file.path)}
                     </p>
 
-                    {file.size !== null &&
-                      file.size !== undefined && (
-                        <p className="text-xs text-slate-500">
-                          {Math.ceil(
-                            file.size / 1024,
-                          )}{' '}
-                          KB
-                        </p>
-                      )}
+                    <p className="text-xs text-slate-500">
+                      {formatFileSize(file.size)}
+                    </p>
                   </div>
 
                   <button
@@ -591,6 +726,7 @@ export default function PropertyDetailsPage() {
                     onClick={() =>
                       handleDeleteFile(
                         file.id,
+                        'image',
                       )
                     }
                     disabled={
@@ -614,14 +750,160 @@ export default function PropertyDetailsPage() {
               </h3>
 
               <p className="mt-2 text-sm text-slate-500">
-                Upload clear photos of the property.
-                These images can later support
-                property verification and listings.
+                Upload clear photos of the property. These images can later support property verification and listings.
               </p>
             </div>
           </div>
         )}
       </div>
+
+      {/* PROPERTY DOCUMENTS */}
+
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold">
+            Property Documents
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Store property-related documents securely for management, verification, and record keeping.
+          </p>
+        </div>
+
+        {documentError && (
+          <div className="mb-5 rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-700">
+              {documentError}
+            </p>
+          </div>
+        )}
+
+        <div className="mb-6 rounded-lg border border-dashed border-slate-300 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={handleDocumentUpload}
+              disabled={
+                isUploadingDocument ||
+                uploadPropertyFile.isPending
+              }
+              className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+            />
+
+            <span className="text-xs text-slate-500">
+              PDF only. Max 5 MB.
+            </span>
+          </div>
+
+          {selectedDocument && (
+            <p className="mt-2 text-sm text-slate-500">
+              Selected: {selectedDocument.name}
+            </p>
+          )}
+
+          {(isUploadingDocument ||
+            uploadPropertyFile.isPending) && (
+            <p className="mt-3 text-sm font-medium text-slate-600">
+              Uploading document...
+            </p>
+          )}
+        </div>
+
+        {propertyFilesLoading ? (
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <p className="text-slate-600">
+              Loading property documents...
+            </p>
+          </div>
+        ) : propertyFilesError ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p className="text-sm text-red-600">
+              Unable to load property documents.
+            </p>
+          </div>
+        ) : documentFiles.length > 0 ? (
+          <div className="space-y-3">
+            {documentFiles.map((file) => (
+              <div
+                key={file.id}
+                className="flex flex-col gap-4 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-red-50 text-sm font-bold text-red-600">
+                    PDF
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-900">
+                      {getFileName(file.path)}
+                    </p>
+
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                      <span>
+                        {formatFileSize(file.size)}
+                      </span>
+
+                      <span>
+                        {file.purpose === 'agreement'
+                          ? 'Agreement'
+                          : file.purpose === 'attachment'
+                            ? 'Attachment'
+                            : 'Document'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex shrink-0 gap-2">
+                  {file.url && (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      View
+                    </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleDeleteFile(
+                        file.id,
+                        'document',
+                      )
+                    }
+                    disabled={
+                      deletePropertyFile.isPending
+                    }
+                    className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {deletePropertyFile.isPending
+                      ? 'Deleting...'
+                      : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed border-slate-300 p-10 text-center">
+            <div className="mx-auto max-w-md">
+              <h3 className="font-medium text-slate-900">
+                No property documents yet
+              </h3>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Upload property documents such as ownership records, agreements, certificates, or other supporting records.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* PROPERTY INFORMATION */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-xl border bg-white p-6 shadow-sm">
@@ -710,7 +992,10 @@ export default function PropertyDetailsPage() {
           </dl>
         </div>
       </div>
-            <div className="rounded-xl border bg-white p-6 shadow-sm">
+
+      {/* UNITS */}
+
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">
             Units
@@ -771,6 +1056,8 @@ export default function PropertyDetailsPage() {
         )}
       </div>
 
+      {/* DESCRIPTION */}
+
       <div className="rounded-xl border bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold">
           Description
@@ -796,8 +1083,7 @@ export default function PropertyDetailsPage() {
             <br />
             <br />
 
-            Archived properties will no longer
-            appear as active properties.
+            Archived properties will no longer appear as active properties.
           </>
         }
         confirmText="Archive Property"
