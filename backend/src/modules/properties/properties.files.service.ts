@@ -6,6 +6,8 @@
  * Purpose:
  * Handles property-specific file operations while enforcing
  * property ownership through the authenticated landlord.
+ *
+ * Supports property images and documents.
  */
 
 import {
