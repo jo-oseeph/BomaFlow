@@ -8,6 +8,7 @@
  * property ownership through the authenticated landlord.
  *
  * Supports property images and documents.
+ *  * Supports property-specific image and document storage operations.
  */
 
 import {
