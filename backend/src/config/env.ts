@@ -1,7 +1,17 @@
 import dotenv from 'dotenv'
 import { z } from 'zod'
+import path from 'path'
 
-dotenv.config()
+const result = dotenv.config({ path: path.resolve(process.cwd(), '.env') })
+
+if (result.error) {
+  console.error('Error loading .env file:', result.error)
+}
+
+console.log(
+  'Loaded environment variables:',
+  Object.keys(result.parsed || {}).sort(),
+)
 
 const envSchema = z.object({
   NODE_ENV: z
